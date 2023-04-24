@@ -1,0 +1,22 @@
+name: Lockbud
+
+on: workflow_dispatch
+
+jobs:
+  test:
+    name: lockbud
+    runs-on: ubuntu-latest
+    container:
+      image: bxb100/lockbud
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Generate code coverage
+        run: |
+          cargo lockbud -k deadlock
+
+      - name: Upload to codecov.io
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
