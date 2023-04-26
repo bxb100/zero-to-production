@@ -8,6 +8,16 @@ async fn health_check() -> HttpResponse {
     HttpResponse::Ok().finish()
 }
 
+#[derive(serde::Deserialize)]
+struct FormData {
+    email: String,
+    name: String,
+}
+
+async fn subscribe(_form: web::Form<FormData>) -> HttpResponse {
+    HttpResponse::Ok().finish()
+}
+
 pub fn create_app() -> App<
     impl ServiceFactory<
         ServiceRequest,
@@ -17,7 +27,9 @@ pub fn create_app() -> App<
         InitError = (),
     >,
 > {
-    App::new().route("/health_check", web::get().to(health_check))
+    App::new()
+        .route("/health_check", web::get().to(health_check))
+        .route("/subscriptions", web::post().to(subscribe))
 }
 
 // We need to mark `run` as public.

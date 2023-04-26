@@ -4,6 +4,7 @@ use std::net::TcpListener;
 
 use actix_web::http::header::ContentType;
 use actix_web::test;
+use reqwest::header::CONTENT_TYPE;
 
 use zero2prod::{create_app, run};
 
@@ -51,4 +52,53 @@ async fn test_actix_web_work() {
     let response = test::call_service(&app, request).await;
     assert!(response.status().is_success());
     assert_eq!(0, test::read_body(response).await.len());
+}
+
+macro_rules! test_form {
+
+    ($body:expr, $($args:expr),+) => {
+        let app_address = spawn_app();
+        let client = reqwest::Client::new();
+
+        let response = client
+            .post(&format!("{}/subscriptions", &app_address))
+            .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .body($body)
+            .send()
+            .await
+            .expect("Failed to execute request.");
+
+        // Assert
+        assert_eq!(response.status().as_u16(), $($args),+);
+    };
+}
+
+#[tokio::test]
+async fn subscribe_return_a_200_for_valid_form_data() {
+    // Act
+    let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
+
+    // Assert
+    test_form!(body, 200);
+}
+
+#[tokio::test]
+async fn subscribe_return_a_400_when_data_is_missing() {
+    // Arrange
+    let test_cases = vec![
+        ("name=le%20guin", "missing the email"),
+        ("email=ursula_le_guin%40gmail.com", "missing the name"),
+        ("", "missing both name and email"),
+    ];
+
+    for (invalid_body, error_message) in test_cases {
+        // Assert
+        test_form!(
+            invalid_body,
+            400,
+            // Additional customised error message on test failure
+            "The API did not fail with 400 Bad Request when the payload was {}.",
+            error_message
+        );
+    }
 }
