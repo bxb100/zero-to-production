@@ -92,6 +92,10 @@ async fn subscribe_return_a_400_when_data_is_missing() {
     ];
 
     for (invalid_body, error_message) in test_cases {
+        test_form! {
+            invalid_body,
+            400
+        }
         // Assert
         test_form!(
             invalid_body,

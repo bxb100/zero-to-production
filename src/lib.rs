@@ -18,6 +18,10 @@ async fn subscribe(_form: web::Form<FormData>) -> HttpResponse {
     HttpResponse::Ok().finish()
 }
 
+async fn index() -> String {
+    "Hello World!".to_string()
+}
+
 pub fn create_app() -> App<
     impl ServiceFactory<
         ServiceRequest,
@@ -28,6 +32,7 @@ pub fn create_app() -> App<
     >,
 > {
     App::new()
+        .route("/", web::get().to(index))
         .route("/health_check", web::get().to(health_check))
         .route("/subscriptions", web::post().to(subscribe))
 }
