@@ -6,7 +6,7 @@ use actix_web::http::header::ContentType;
 use actix_web::test;
 use reqwest::header::CONTENT_TYPE;
 
-use zero2prod::{create_app, run};
+use zero2prod::startup::{create_app, run};
 
 // `tokio::test` is the testing equivalent of `tokio::main`.
 // It also spares you from having to specify the `#[test]` attribute. //
