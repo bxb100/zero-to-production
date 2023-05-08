@@ -57,6 +57,6 @@ runs:
         echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse" >> $GITHUB_ENV
 
     - name: Setup rust components
-      if: ${{ inputs.components != ' }}
+      if: ${{ inputs.components != '' }}
       shell: bash
       run: rustup component add ${{ inputs.components }}
