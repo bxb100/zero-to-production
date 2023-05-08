@@ -5,7 +5,9 @@ use std::net::TcpListener;
 use actix_web::http::header::ContentType;
 use actix_web::test;
 use reqwest::header::CONTENT_TYPE;
+use sqlx::{Connection, PgConnection};
 
+use zero2prod::configuration::get_configuration;
 use zero2prod::startup::{create_app, run};
 
 // `tokio::test` is the testing equivalent of `tokio::main`.
@@ -80,6 +82,20 @@ async fn subscribe_return_a_200_for_valid_form_data() {
 
     // Assert
     test_form!(body, 200);
+
+    let configuration = get_configuration().expect("Failed to read configuration.");
+    let connection_string = configuration.database.connection_string();
+    // The `Connection` trait MUST be in scope for us to invoke
+    // `PgConnection::connect` - it is not an inherent method of the struct!
+    let mut connection = PgConnection::connect(&connection_string)
+        .await
+        .expect("Failed to connect to Postgres.");
+    let saved = sqlx::query!("SELECT email, name FROM subscriptions",)
+        .fetch_one(&mut connection)
+        .await
+        .expect("Failed to fetch saved subscription.");
+    assert_eq!(saved.email, "ursula_le_guin@gmail.com");
+    assert_eq!(saved.name, "le guin");
 }
 
 #[tokio::test]

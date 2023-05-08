@@ -24,10 +24,11 @@ name = "zero2prod"
 actix-web = "4"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 serde = { version = "1", features = ["derive"] }
+config = "0.13.3"
 
 # Using table-like toml syntax to avoid a super-long line!
 [dependencies.sqlx]
-version = "0.5.7"
+version = "0.6.3"
 default-features = false
 features = [
     "runtime-actix-rustls",
