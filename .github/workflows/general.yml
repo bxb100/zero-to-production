@@ -131,6 +131,9 @@ jobs:
   coverage:
     name: Code coverage
     runs-on: ubuntu-latest
+    env:
+      # default log level is debug, but coverage printed the env var
+      RUST_LOG: info
     services:
       postgres:
         image: postgres:14
