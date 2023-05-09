@@ -57,7 +57,7 @@ jobs:
       - name: setup rust evn
         uses: ./.github/actions/setup
         with:
-          cache-key: "-generate"
+          cache-key: "-${{ env.SQLX_VERSION }}"
 
       - name: Install sqlx-cli
         run:
@@ -89,7 +89,6 @@ jobs:
         uses: ./.github/actions/setup
         with:
           cache-key: "-${{ env.SQLX_VERSION }}"
-          # Specific to dtolnay/rust-toolchain: Comma-separated string of additional components to install
           components: rustfmt
       - name: Enforce formatting
         run: cargo fmt --check
@@ -114,9 +113,6 @@ jobs:
         with:
           cache-key: "-${{ env.SQLX_VERSION }}"
           components: clippy
-      - uses: Swatinem/rust-cache@v2
-        with:
-          key: sqlx-${{ env.SQLX_VERSION }}
       - name: Install sqlx-cli
         run:
           cargo install sqlx-cli
