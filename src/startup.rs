@@ -3,10 +3,11 @@ use std::net::TcpListener;
 use actix_web::body::MessageBody;
 use actix_web::dev::{Server, ServiceFactory, ServiceRequest, ServiceResponse};
 use actix_web::{web, App, Error, HttpServer};
+use sqlx::PgPool;
 
 use crate::routes::{health_check, index, subscribe};
 
-pub fn create_app() -> App<
+pub fn routes() -> App<
     impl ServiceFactory<
         ServiceRequest,
         Config = (),
@@ -23,7 +24,11 @@ pub fn create_app() -> App<
 
 /// We need to mark `run` as public.
 /// It is no longer a binary entrypoint, therefore we can mark it as async // without having to use any proc-macro incantation.
-pub fn run(listener: TcpListener) -> std::io::Result<Server> {
-    let server = HttpServer::new(create_app).listen(listener)?.run();
+pub fn run(listener: TcpListener, connection: PgPool) -> std::io::Result<Server> {
+    // Wrap the connection in a smart pointer
+    let db_pool = web::Data::new(connection);
+    let server = HttpServer::new(move || routes().app_data(db_pool.clone()))
+        .listen(listener)?
+        .run();
     Ok(server)
 }
