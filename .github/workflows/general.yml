@@ -1,16 +1,6 @@
-# The name of your workflow. GitHub displays the names of your workflows on your repository's "Actions" tab
 name: Rust
 
-# To automatically trigger the workflow
-on:
-  # NB: this differs from the book's project!
-  # These settings allow us to run this specific CI pipeline for PRs against
-  # this specific branch (a.k.a. book chapter).
-  push:
-  pull_request:
-    types: [ opened, synchronize, reopened ]
-    branches:
-      - root-chapter-03-part1
+on: [ push ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
@@ -26,7 +16,7 @@ env:
 jobs:
 
   lint:
-    name: ${{ matrix.name }}
+    name: RustFmt
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -41,19 +31,21 @@ jobs:
       - name: setup rust env
         uses: ./.github/actions/setup
         with:
-          cache-key: "-Lint"
-          components: ${{ matrix.components }}
+          cache-key: "-RustFmt"
       - name: Check
-        run: cargo ${{ matrix.cargo_cmd }}
+        run: cargo fmt --check
 
   audit:
     strategy:
       matrix:
         include:
-          - name: Code coverage
-            cargo_cmd: install cargo-tarpaulin && cargo tarpaulin --verbose --workspace
           - name: Test
             cargo_cmd: test
+          - name: Clippy
+            components: clippy
+            cargo_cmd: clippy -- -D warnings
+          - name: Code coverage
+            cargo_cmd: install cargo-tarpaulin && cargo tarpaulin --verbose --workspace
 
     name: Test
     runs-on: ubuntu-latest
@@ -71,7 +63,7 @@ jobs:
       - name: setup rust env
         uses: ./.github/actions/setup
         with:
-          cache-key: "-${{ env.SQLX_VERSION }}"
+          cache-key: "-${{ matrix.name }}-${{ env.SQLX_VERSION }}"
           components: ${{ matrix.components }}
       - name: Install sqlx-cli
         run:
