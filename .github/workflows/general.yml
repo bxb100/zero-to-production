@@ -28,6 +28,7 @@ jobs:
         run: cargo fmt --check
 
   audit:
+    needs: [ lint ]
     strategy:
       matrix:
         include:
@@ -39,7 +40,7 @@ jobs:
           - name: Code coverage
             cargo_cmd: install cargo-tarpaulin && cargo tarpaulin --verbose --workspace
 
-    name: Test
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
     services:
       postgres:
