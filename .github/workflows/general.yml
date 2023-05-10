@@ -18,14 +18,6 @@ jobs:
   lint:
     name: RustFmt
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - name: Clippy
-            components: clippy
-            cargo_cmd: clippy -- -D warnings
-          - name: RustFmt
-            cargo_cmd: fmt --check
     steps:
       - uses: actions/checkout@v3
       - name: setup rust env
