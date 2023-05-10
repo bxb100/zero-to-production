@@ -33,12 +33,12 @@ jobs:
       matrix:
         include:
           - name: Test
-            cargo_cmd: test
+            cargo_cmd: test >> $GITHUB_STEP_SUMMARY
           - name: Clippy
             components: clippy
-            cargo_cmd: clippy -- -D warnings
+            cargo_cmd: clippy -- -D warnings >> $GITHUB_STEP_SUMMARY
           - name: Code coverage
-            cargo_cmd: install cargo-tarpaulin || true && cargo tarpaulin --verbose -o Stdout
+            cargo_cmd: install cargo-tarpaulin || true && cargo tarpaulin --verbose --workspace --out Xml
 
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
@@ -72,7 +72,12 @@ jobs:
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
       - name: Migrate database
         run: SKIP_DOCKER=true ./scripts/init_db.sh
-      - if: ${{ matrix.name == 'Code coverage' }}
-        run: echo "RUST_LOG=info" >> $GITHUB_ENV
       - name: Check
-        run: cargo ${{ matrix.cargo_cmd }} >> $GITHUB_STEP_SUMMARY
+        run: cargo ${{ matrix.cargo_cmd }}
+
+      - name: Upload to codecov.io
+        if: ${{ matrix.name == 'Code coverage' }}
+        uses: codecov/codecov-action@v3
+        with:
+          # token:                ${{secrets.CODECOV_TOKEN}} # not required for public repos
+          fail_ci_if_error: true

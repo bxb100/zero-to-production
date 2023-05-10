@@ -33,8 +33,6 @@ runs:
         restore-keys: |
           ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           ${{ runner.os }}-cargo
-    - name: Run sccache-cache
-      uses: mozilla-actions/sccache-action@v0.0.3
 
     - name: Setup rust toolchain
       shell: bash
