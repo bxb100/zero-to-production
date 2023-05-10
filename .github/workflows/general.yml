@@ -38,7 +38,7 @@ jobs:
             components: clippy
             cargo_cmd: clippy -- -D warnings
           - name: Code coverage
-            cargo_cmd: install cargo-tarpaulin && cargo tarpaulin --verbose -o Stdout
+            cargo_cmd: install cargo-tarpaulin || true && cargo tarpaulin --verbose -o Stdout
 
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
