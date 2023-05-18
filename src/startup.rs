@@ -2,6 +2,7 @@ use std::net::TcpListener;
 
 use actix_web::body::MessageBody;
 use actix_web::dev::{Server, ServiceFactory, ServiceRequest, ServiceResponse};
+use actix_web::middleware::Logger;
 use actix_web::{web, App, Error, HttpServer};
 use sqlx::PgPool;
 
@@ -27,8 +28,9 @@ pub fn routes() -> App<
 pub fn run(listener: TcpListener, connection: PgPool) -> std::io::Result<Server> {
     // Wrap the connection in a smart pointer
     let db_pool = web::Data::new(connection);
-    let server = HttpServer::new(move || routes().app_data(db_pool.clone()))
-        .listen(listener)?
-        .run();
+    let server =
+        HttpServer::new(move || routes().wrap(Logger::default()).app_data(db_pool.clone()))
+            .listen(listener)?
+            .run();
     Ok(server)
 }
