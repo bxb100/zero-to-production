@@ -37,8 +37,17 @@ pub struct TestApp {
 }
 
 static TRACING: Lazy<()> = Lazy::new(|| {
-    let subscriber = get_subscriber("zero2prod", "info");
-    init_subscriber(subscriber);
+    let name = "zero2prod";
+    let env_filter = "info";
+
+    // The Sink is part of return type, So we can't assign it to a variable
+    if std::env::var("TEST_LOG").is_ok() {
+        let subscriber = get_subscriber(name, env_filter, std::io::stdout);
+        init_subscriber(subscriber);
+    } else {
+        let subscriber = get_subscriber(name, env_filter, std::io::sink);
+        init_subscriber(subscriber);
+    };
 });
 
 // Launch our application in the background ~somehow~
