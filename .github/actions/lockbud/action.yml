@@ -1,0 +1,5 @@
+name: 'Lockbud Action'
+description: 'Using lockbud action'
+runs:
+  using: 'docker'
+  image: 'docker://burtonqin/lockbud'

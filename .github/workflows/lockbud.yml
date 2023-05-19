@@ -12,8 +12,6 @@ jobs:
   test:
     name: lockbud
     runs-on: ubuntu-latest
-    container:
-      image: burtonqin/lockbud
     services:
       postgres:
         image: postgres:14
@@ -26,6 +24,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: setup rust env
+        uses: ./.github/actions/setup
+        with:
+          # Temporary using test cache
+          cache-key: "-Test-${{ env.SQLX_VERSION }}"
+          components: ${{ matrix.components }}
+
+      - name: Install postgresql-client
+        run: sudo apt-get update && sudo apt-get install postgresql-client -y
+
       - name: Install sqlx-cli
         run:
           cargo install sqlx-cli
@@ -34,10 +43,9 @@ jobs:
           --no-default-features
           --locked || true
 
-      - name: run docker in the container
-        shell: sh
-        run: ./scripts/init_db.sh
+      - name: Migrate database
+        run: SKIP_DOCKER=true ./scripts/init_db.sh
 
+      # Using action not job container, so that we can utilize apt-get to prepare the database
       - name: Generate code coverage
-        run: |
-          >&2 cargo lockbud -k deadlock
+        uses: ./.github/actions/lockbud

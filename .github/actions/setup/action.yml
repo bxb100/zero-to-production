@@ -3,6 +3,7 @@
 
 name: Setup Rust Builder
 description: 'Prepare Rust Build Environment'
+
 inputs:
   toolchain:
     description: |
