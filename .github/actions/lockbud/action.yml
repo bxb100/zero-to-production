@@ -4,4 +4,4 @@ runs:
   using: 'docker'
   image: 'docker://burtonqin/lockbud'
   env:
-    DATABASE_URL: postgres://postgres:password@host.docker.internal:5432/newsletter
+    DATABASE_URL: postgres://postgres:password@localhost:5432/newsletter
