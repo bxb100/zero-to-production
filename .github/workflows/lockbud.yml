@@ -17,9 +17,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: run docker in the container
-        shell: sh
-        run: ./scripts/init_db.sh
+
       - name: Install sqlx-cli
         run:
           cargo install sqlx-cli
@@ -27,6 +25,11 @@ jobs:
           --features ${{ env.SQLX_FEATURES }}
           --no-default-features
           --locked || true
+
+      - name: run docker in the container
+        shell: sh
+        run: ./scripts/init_db.sh
+
       - name: Generate code coverage
         run: |
           >&2 cargo lockbud -k deadlock
