@@ -14,10 +14,18 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: burtonqin/lockbud
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - run: sudo apt-get install -y postgresql-client
       - name: Install sqlx-cli
         run:
           cargo install sqlx-cli
