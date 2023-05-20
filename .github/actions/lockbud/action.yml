@@ -1,7 +1,0 @@
-name: 'Lockbud Action'
-description: 'Using lockbud action'
-runs:
-  using: 'docker'
-  image: 'docker://burtonqin/lockbud'
-  env:
-    DATABASE_URL: postgres://postgres:password@localhost:5432/newsletter

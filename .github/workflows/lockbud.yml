@@ -1,12 +1,14 @@
 name: Lockbud
 
-on: workflow_dispatch
+on:
+  - workflow_dispatch
+  - pull_request
 
 env:
   CARGO_TERM_COLOR: always
   SQLX_VERSION: 0.6.2
   SQLX_FEATURES: "rustls,postgres"
-  DATABASE_URL: postgres://postgres:password@host.docker.internal:5432/newsletter
+  DATABASE_URL: postgres://postgres:password@localhost:5432/newsletter
 
 jobs:
   test:
@@ -22,15 +24,17 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      - name: Checkout repository
+      - name: Checkout lockbud
         uses: actions/checkout@v3
-
-      - name: setup rust env
-        uses: ./.github/actions/setup
         with:
-          # Temporary using test cache
-          cache-key: "-Test-${{ env.SQLX_VERSION }}"
-          components: ${{ matrix.components }}
+          repository: BurtonQin/lockbud
+
+      - name: Install Lockbud
+        run: |
+          # lockbud need rust version
+          rustup default nightly-2023-04-11
+          rustup component add rust-src rustc-dev llvm-tools-preview
+          cargo install --locked --path .
 
       - name: Install postgresql-client
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
@@ -43,9 +47,12 @@ jobs:
           --no-default-features
           --locked || true
 
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Migrate database
         run: SKIP_DOCKER=true ./scripts/init_db.sh
 
       # Using action not job container, so that we can utilize apt-get to prepare the database
       - name: Generate code coverage
-        uses: ./.github/actions/lockbud
+        run: cargo clean && cargo lockbud
