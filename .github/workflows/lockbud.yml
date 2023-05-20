@@ -55,4 +55,4 @@ jobs:
 
       # Using action not job container, so that we can utilize apt-get to prepare the database
       - name: Generate code coverage
-        run: cargo clean && cargo lockbud
+        run: cargo clean && cargo lockbud >> $GITHUB_STEP_SUMMARY
