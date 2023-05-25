@@ -2,8 +2,8 @@ use secrecy::{ExposeSecret, Secret};
 
 #[derive(serde::Deserialize)]
 pub struct Settings {
-    pub application_port: u16,
     pub database: DatabaseSettings,
+    pub application: ApplicationSettings,
 }
 
 #[derive(serde::Deserialize)]
@@ -15,17 +15,29 @@ pub struct DatabaseSettings {
     pub database_name: String,
 }
 
+#[derive(serde::Deserialize)]
+pub struct ApplicationSettings {
+    pub port: u16,
+    pub host: String,
+}
+
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
-    // Initialise our configuration reader
-    // Add configuration values from a file named `configuration`.
-    // It will look for any top-level file with an extension
-    // that `config` knows how to parse: yaml, json, etc.
-    let settings = config::Config::builder()
-        .add_source(config::File::with_name("configuration"))
-        .build()?;
-    // Try to convert the configuration values it read into
-    // our Settings type
-    settings.try_deserialize()
+    let mut builder = config::Config::builder();
+
+    // add base configuration, that contains defaults for all the variables
+    builder = builder.add_source(config::File::with_name("configuration/base"));
+
+    let env: Environment = std::env::var("APP_ENVIRONMENT")
+        .unwrap_or_else(|_| "local".into())
+        .try_into()
+        .expect("Failed to parse APP_ENVIRONMENT");
+
+    // add production/local configuration to override defaults
+    builder = builder.add_source(
+        config::File::with_name(&format!("configuration/{}", env.as_str())).required(true),
+    );
+
+    builder.build()?.try_deserialize()
 }
 
 impl DatabaseSettings {
@@ -48,5 +60,31 @@ impl DatabaseSettings {
             self.host,
             self.port
         ))
+    }
+}
+
+pub enum Environment {
+    Local,
+    Production,
+}
+
+impl Environment {
+    pub fn as_str(&self) -> &str {
+        match self {
+            Environment::Local => "local",
+            Environment::Production => "production",
+        }
+    }
+}
+
+impl TryFrom<String> for Environment {
+    type Error = String;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        match value.to_lowercase().as_str() {
+            "local" => Ok(Environment::Local),
+            "production" => Ok(Environment::Production),
+            other => Err(format!("{} is not a valid environment", other)),
+        }
     }
 }

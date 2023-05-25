@@ -12,7 +12,7 @@ ifeq ($(level),)
 level := info
 endif
 
-.PHONY: clean check test run docker prepare
+.PHONY: clean check test run docker docker-run prepare
 clean: ## cargo clean
 	@cargo clean
 
@@ -27,6 +27,9 @@ run: check ## cargo check and run, default log level is INFO
 
 docker: ## build a Docker image
 	@docker build --tag zero2prod --file Dockerfile .
+
+docker-run: ## run the Docker image
+	@docker run --rm --publish 8000:8000 zero2prod
 
 prepare: ## prepare sqlx offline metadata
 	# It must be invoked as a cargo subcommand

@@ -10,6 +10,8 @@ RUN apt update && apt install lld clang -y
 COPY . .
 # Enforce the sqlx offline
 ENV SQLX_OFFLINE true
+# Using host 0.0.0.0 
+ENV APP_ENVIRONMENT production
 # Let's build our binary!
 # We'll use the release profile to make it faaaast
 RUN cargo build --release
