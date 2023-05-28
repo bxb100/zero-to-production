@@ -1,19 +1,37 @@
-# We use the latest Rust stable release as base image
-FROM rust:1.69
-# Let's switch our working directory to `app` (equivalent to `cd app`)
-# The `app` folder will be created for us by Docker in case it does not
-# exist already.
+FROM rust:1.69 AS chef
 WORKDIR /app
-# Install the required system dependencies for our linking configuration
-RUN apt update && apt install lld clang -y
-# Copy all files from our working environment to our Docker image
+RUN cargo install cargo-chef
+
+FROM chef AS planner
+# Copy the whole project
 COPY . .
-# Enforce the sqlx offline
+# Prepare a build plan ("recipe")
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM chef AS builder
+# Copy the build plan from the previous Docker stage
+COPY --from=planner /app/recipe.json recipe.json
+# Build dependencies - this layer is cached as long as `recipe.json`
+# doesn't change.
+RUN cargo chef cook --recipe-path recipe.json
+COPY . .
 ENV SQLX_OFFLINE true
-# Using host 0.0.0.0 
+# Build the project
+RUN cargo build --release --bin zero2prod
+
+# Runtime stage
+FROM debian:bullseye-slim AS runtime
+WORKDIR /app
+# Install OpenSSL - it is dynamically linked by some of our dependencies
+# Install ca-certificates - it is needed to verify TLS certificates
+# when establishing HTTPS connections
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends openssl ca-certificates \
+    # Clean up
+    && apt-get autoremove -y \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /app/target/release/zero2prod zero2prod
+COPY configuration configuration
 ENV APP_ENVIRONMENT production
-# Let's build our binary!
-# We'll use the release profile to make it faaaast
-RUN cargo build --release
-# When `docker run` is executed, launch the binary!
-ENTRYPOINT ["./target/release/zero2prod"]
+ENTRYPOINT ["./zero2prod"]

@@ -53,3 +53,10 @@ features = [
 [dev-dependencies]
 reqwest = "0.11"
 once_cell = "1"
+
+# https://github.com/johnthagen/min-sized-rust#strip-symbols-from-binary
+[profile.release]
+strip = true  # Automatically strip symbols from the binary.
+opt-level = "z"  # Optimize for size.
+lto = true
+codegen-units = 1

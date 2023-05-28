@@ -29,7 +29,7 @@ docker: ## build a Docker image
 	@docker build --tag zero2prod --file Dockerfile .
 
 docker-run: ## run the Docker image
-	@docker run --rm --publish 8000:8000 zero2prod
+	@docker run --network=host --rm zero2prod
 
 prepare: ## prepare sqlx offline metadata
 	# It must be invoked as a cargo subcommand
