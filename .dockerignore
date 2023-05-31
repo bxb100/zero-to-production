@@ -1,4 +1,5 @@
 .env
+.secrets.env
 .dockerignore
 spec.yaml
 target/

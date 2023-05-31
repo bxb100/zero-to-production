@@ -1,7 +1,6 @@
 use std::net::TcpListener;
 use std::time::Duration;
 
-use secrecy::ExposeSecret;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 
@@ -19,8 +18,7 @@ async fn main() -> std::io::Result<()> {
 
     let db_pool: PgPool = PgPoolOptions::new()
         .acquire_timeout(Duration::from_secs(2))
-        .connect_lazy(configuration.database.connection_string().expose_secret())
-        .expect("Failed to connect to Postgres.");
+        .connect_lazy_with(configuration.database.with_db());
 
     let address = format!(
         "{}:{}",

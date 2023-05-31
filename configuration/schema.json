@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schema.json",
+  "title": "Configuration",
+  "description": "Configuration for project",
+  "type": "object",
+  "properties": {
+    "application": {
+      "type": "object",
+      "properties": {
+        "port": {
+          "type": "number"
+        },
+        "host": {
+          "type": "string",
+          "format": "hostname"
+        }
+      }
+    },
+    "database": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "format": "hostname"
+        },
+        "port": {
+          "type": "number"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "database_name": {
+          "type": "string"
+        },
+        "require_ssl": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "required": [
+    "application",
+    "database"
+  ]
+}

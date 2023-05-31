@@ -1,0 +1,30 @@
+# fly.toml app configuration file generated for zero2pro on 2023-05-31T18:47:55+08:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "zero2pro"
+primary_region = "fra"
+
+[[services]]
+internal_port = 8000
+auto_stop_machines = true
+auto_start_machines = true
+min_machines_running = 0
+
+[[services.ports]]
+handlers = ["tls", "http"]
+port = "443"
+
+[checks]
+[checks.health_check]
+grace_period = "30s"
+interval = "15s"
+method = "get"
+path = "/health_check"
+port = 8000
+timeout = "10s"
+type = "http"
+
+[env]
+APP_ENVIRONMENT = "production"

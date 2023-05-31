@@ -38,3 +38,11 @@ prepare: ## prepare sqlx offline metadata
     # all our SQL queries.
 	cargo sqlx prepare -- --lib
 
+.PHONY: fly-prep fly-run
+fly-prep: ## prepare postgres database for fly
+
+	@export $$(cat .secrets.env | sed -n '1p') && sqlx migrate info && sqlx migrate run
+
+fly-run: fly-prep ## deploy to fly
+	@fly deploy
+	@fly secrets import < .secrets.env

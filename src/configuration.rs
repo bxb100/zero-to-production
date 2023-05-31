@@ -1,4 +1,7 @@
 use secrecy::{ExposeSecret, Secret};
+use sqlx::postgres::{PgConnectOptions, PgSslMode};
+use sqlx::ConnectOptions;
+use tracing_log::log::LevelFilter;
 
 #[derive(serde::Deserialize)]
 pub struct Settings {
@@ -13,6 +16,7 @@ pub struct DatabaseSettings {
     pub host: String,
     pub port: u16,
     pub database_name: String,
+    pub require_ssl: bool,
 }
 
 #[derive(serde::Deserialize)]
@@ -37,29 +41,37 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
         config::File::with_name(&format!("configuration/{}", env.as_str())).required(true),
     );
 
+    // Add in settings from environment variables (with a prefix of APP and '__' as separator)
+    // E.g. `APP_APPLICATION__PORT=5001 would set `Settings.application.port`
+    let env = config::Environment::with_prefix("app")
+        .prefix_separator("_")
+        .separator("__");
+    builder = builder.add_source(env);
+
     builder.build()?.try_deserialize()
 }
 
 impl DatabaseSettings {
-    pub fn connection_string(&self) -> Secret<String> {
-        Secret::new(format!(
-            "postgres://{}:{}@{}:{}/{}",
-            self.username,
-            self.password.expose_secret(),
-            self.host,
-            self.port,
-            self.database_name
-        ))
+    pub fn with_db(&self) -> PgConnectOptions {
+        let mut options = self.without_db().database(&self.database_name);
+        options.log_statements(LevelFilter::Trace);
+        options
     }
 
-    pub fn connection_string_without_db(&self) -> Secret<String> {
-        Secret::new(format!(
-            "postgres://{}:{}@{}:{}",
-            self.username,
-            self.password.expose_secret(),
-            self.host,
-            self.port
-        ))
+    pub fn without_db(&self) -> PgConnectOptions {
+        let ssl_mode: PgSslMode = if self.require_ssl {
+            PgSslMode::Require
+        } else {
+            // try to
+            PgSslMode::Prefer
+        };
+
+        PgConnectOptions::new()
+            .username(self.username.as_str())
+            .password(self.password.expose_secret().as_str())
+            .host(self.host.as_str())
+            .port(self.port)
+            .ssl_mode(ssl_mode)
     }
 }
 
