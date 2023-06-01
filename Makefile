@@ -38,10 +38,17 @@ prepare: ## prepare sqlx offline metadata
     # all our SQL queries.
 	cargo sqlx prepare -- --lib
 
+export DATABASE_URL=$(shell cat .secrets.env | grep "DATABASE_URL" | awk -F '=' '{print $$NF}')
+
 .PHONY: fly-prep fly-run
 fly-prep: ## prepare postgres database for fly
-
-	@export $$(cat .secrets.env | sed -n '1p') && sqlx migrate info && sqlx migrate run
+ifeq ($(strip $(DATABASE_URL)),)
+	@echo "DATABASE_URL is empty, please check .secrets.env"
+	@false
+endif
+	@echo DATABASE_URL is $(DATABASE_URL)
+	@# notice we need to export the DATABASE_URL variable for sqlx to run
+	@sqlx migrate info && sqlx migrate run
 
 fly-run: fly-prep ## deploy to fly
 	@fly deploy
