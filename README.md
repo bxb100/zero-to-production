@@ -6,6 +6,18 @@
 
 [![Security audit](https://github.com/bxb100/zero-to-production/actions/workflows/audit.yml/badge.svg)](https://github.com/bxb100/zero-to-production/actions/workflows/audit.yml)
 
+## Environment
+
+* Rust stable
+* sqlx
+* psql
+* docker
+> online
+* Terraform
+* fly CLI
+* GNU make
+
+## Infrastructure
 [//]: # (https://mermaid.js.org/syntax/stateDiagram.html)
 ```mermaid
 stateDiagram-v2
@@ -30,7 +42,7 @@ stateDiagram-v2
 
 * https://fly.io host online test project
 * https://neon.tech host online test database
-* https://app.terraform.io host terraform state
+* https://app.terraform.io host terraform state, execute in the local
 * [terraform-community-providers/neon](https://registry.terraform.io/providers/terraform-community-providers/neon/latest) terraform neon provider
 * [floydspace/fly]( https://registry.terraform.io/providers/floydspace/fly/latest) terraform fly provider[^not official]
 

@@ -67,3 +67,6 @@ endif
 fly-run: fly-prep ## deploy to fly
 	@#fly secrets import < .secrets.env
 	@fly deploy
+
+fly-destroy: ## terraform destroy
+	@terraform destroy --auto-approve
