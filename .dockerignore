@@ -8,3 +8,9 @@ tests/
 Dockerfile
 scripts/
 migrations/
+# terraform
+main.tf
+.terraform.lock.hcl
+.terraform
+*.tfstate
+*.tfstate.backup

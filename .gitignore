@@ -15,3 +15,8 @@ flamegraph.svg
 perf.*
 
 **/.DS_Store
+
+# terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
