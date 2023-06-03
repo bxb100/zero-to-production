@@ -8,6 +8,9 @@ on:
       - '.github/**'
       - 'scripts/**'
       - 'README.md'
+      - 'main.tf'
+      - '.terraform.lock.hcl'
+      - 'fly.toml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
