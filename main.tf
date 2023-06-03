@@ -42,6 +42,9 @@ resource "neon_role" "this" {
   project_id = neon_project.this.id
   branch_id  = neon_project.this.branch.id
   name       = "tf_role"
+  lifecycle {
+    ignore_changes  = all
+  }
 }
 
 resource "neon_database" "this" {
@@ -75,10 +78,14 @@ resource "fly_app" "this" {
       value = neon_database.this.name
     }
   }
+  lifecycle {
+    ignore_changes  = [secrets["APP_DATABASE__PASSWORD"]]
+  }
 }
 
 output "postgres_uri" {
-  value     = "postgres://${neon_role.this.name}:${neon_role.this.password}@${neon_project.this.branch.endpoint.host}/${neon_database.this.name}"
+  value       = "postgres://${neon_role.this.name}:${neon_role.this.password}@${neon_project.this.branch.endpoint.host}/${neon_database.this.name}"
   description = "the neon password only show once"
-  sensitive = true
+  sensitive   = true
+  depends_on  = [fly_app.this]
 }

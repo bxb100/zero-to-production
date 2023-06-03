@@ -38,12 +38,13 @@ prepare: ## prepare sqlx offline metadata
     # all our SQL queries.
 	cargo sqlx prepare -- --lib
 
-export DATABASE_URL=$(shell cat .secrets.env | grep "DATABASE_URL" | awk -F '=' '{print $$NF}')
-export FLY_API_TOKEN=$(shell cat .secrets.env | grep "FLY_API_TOKEN" | awk -F '=' '{print $$NF}')
-export NEON_TOKEN=$(shell cat .secrets.env | grep "NEON_TOKEN" | awk -F '=' '{print $$NF}')
+config_file := .secrets.env
+export DATABASE_URL=$(shell cat $(config_file) | grep "DATABASE_URL" | awk -F '=' '{print $$NF}')
+export FLY_API_TOKEN=$(shell cat $(config_file) | grep "FLY_API_TOKEN" | awk -F '=' '{print $$NF}')
+export NEON_TOKEN=$(shell cat $(config_file) | grep "NEON_TOKEN" | awk -F '=' '{print $$NF}')
 
-.PHONY: fly-infra fly-prep fly-run
-fly-infra: ## terraform apply
+.PHONY: infra-plan infra infra-destroy infra-util fly-prep fly-run
+infra-plan: ## terraform init and plan
 ifeq ($(strip $(FLY_API_TOKEN)),)
 	@echo "FLY_API_TOKEN is empty, please check .secrets.env"
 	@false
@@ -52,10 +53,24 @@ ifeq ($(strip $(NEON_TOKEN)),)
 	@echo "NEON_TOKEN is empty, please check .secrets.env"
 	@false
 endif
-	# should only run once
-	@terraform apply --auto-approve
+	@terraform init
+	@terraform plan
 
-fly-prep: ## prepare postgres database for fly
+infra: infra-plan ## terraform apply
+	@terraform apply --auto-approve
+	@$(MAKE) infra-util
+
+infra-destroy: ## terraform destroy
+	@terraform destroy --auto-approve
+	@sed -i '' '/DATABASE_URL/d' $(config_file)
+
+infra-util: infra ## run this when infra is build done
+	@if ! grep -q "DATABASE_URL" $(config_file); then \
+      echo 'change the database url'; \
+      echo "\nDATABASE_URL=$$(terraform output postgres_uri | sed -E 's/\"//g')" >> $(config_file); \
+    fi
+
+fly-prep: infra-util ## prepare postgres database for fly
 ifeq ($(strip $(DATABASE_URL)),)
 	@echo "DATABASE_URL is empty, please check .secrets.env"
 	@false
@@ -67,6 +82,3 @@ endif
 fly-run: fly-prep ## deploy to fly
 	@#fly secrets import < .secrets.env
 	@fly deploy
-
-fly-destroy: ## terraform destroy
-	@terraform destroy --auto-approve
