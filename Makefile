@@ -64,13 +64,13 @@ infra-destroy: ## terraform destroy
 	@terraform destroy --auto-approve
 	@sed -i '' '/DATABASE_URL/d' $(config_file)
 
-infra-util: infra ## run this when infra is build done
+infra-util: ## run this when infra is build done
 	@if ! grep -q "DATABASE_URL" $(config_file); then \
       echo 'change the database url'; \
       echo "\nDATABASE_URL=$$(terraform output postgres_uri | sed -E 's/\"//g')" >> $(config_file); \
     fi
 
-fly-prep: infra-util ## prepare postgres database for fly
+fly-prep: infra ## prepare postgres database for fly
 ifeq ($(strip $(DATABASE_URL)),)
 	@echo "DATABASE_URL is empty, please check .secrets.env"
 	@false
