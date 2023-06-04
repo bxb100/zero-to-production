@@ -38,19 +38,14 @@ prepare: ## prepare sqlx offline metadata
     # all our SQL queries.
 	cargo sqlx prepare -- --lib
 
-config_file := .secrets.env
-export DATABASE_URL=$(shell cat $(config_file) | grep "DATABASE_URL" | awk -F '=' '{print $$NF}')
-export FLY_API_TOKEN=$(shell cat $(config_file) | grep "FLY_API_TOKEN" | awk -F '=' '{print $$NF}')
-export NEON_TOKEN=$(shell cat $(config_file) | grep "NEON_TOKEN" | awk -F '=' '{print $$NF}')
-
-.PHONY: infra-plan infra infra-destroy infra-util fly-prep fly-deploy fly-run
+.PHONY: infra-plan infra infra-destroy fly-prep fly-deploy fly-run
 infra-plan: ## terraform init and plan
 ifeq ($(strip $(FLY_API_TOKEN)),)
-	@echo "FLY_API_TOKEN is empty, please check .secrets.env"
+	@echo "FLY_API_TOKEN is empty, add it to .envrc and using direnv allow"
 	@false
 endif
 ifeq ($(strip $(NEON_TOKEN)),)
-	@echo "NEON_TOKEN is empty, please check .secrets.env"
+	@echo "NEON_TOKEN is empty, add it to .envrc and using direnv allow"
 	@false
 endif
 	@terraform init
@@ -58,21 +53,14 @@ endif
 
 infra: infra-plan ## terraform apply
 	@terraform apply --auto-approve
-	@$(MAKE) infra-util
+	@echo "RUN direnv allow to effect the chanages"
 
 infra-destroy: ## terraform destroy
 	@terraform destroy --auto-approve
-	@sed -i '.bak' '/^DATABASE_URL/d' $(config_file)
 
-infra-util: ## run this when infra is build done
-	@if ! grep -q "DATABASE_URL" $(config_file); then \
-      echo 'change the database url'; \
-      echo "DATABASE_URL=$$(terraform output postgres_uri | sed -E 's/\"//g')" >> $(config_file); \
-    fi
-
-fly-prep: infra-util ## prepare postgres database for fly
+fly-prep: ## prepare postgres database for fly
 ifeq ($(strip $(DATABASE_URL)),)
-	@echo "DATABASE_URL is empty, please check .secrets.env"
+	@echo "DATABASE_URL is empty, madd it to .envrc and using direnv allow"
 	@false
 endif
 	@echo DATABASE_URL is $(DATABASE_URL)
@@ -82,7 +70,3 @@ endif
 fly-deploy: fly-prep ## deploy to fly
 	@#fly secrets import < .secrets.env
 	@fly deploy
-
-fly-run: ## prepare infrastructure, database schema, and deploy to fly
-	@$(MAKE) infra
-	@$(MAKE) fly-deploy

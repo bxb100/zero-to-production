@@ -12,13 +12,18 @@
 * sqlx
 * psql
 * docker
+
 > online
+
+* direnv[^1]
 * Terraform
 * fly CLI
 * GNU make
 
 ## Infrastructure
+
 [//]: # (https://mermaid.js.org/syntax/stateDiagram.html)
+
 ```mermaid
 stateDiagram-v2
     [*] --> Terraform
@@ -40,10 +45,14 @@ stateDiagram-v2
     Terraform --> flyCLI
 ```
 
-* https://fly.io host online test project
-* https://neon.tech host online test database
-* https://app.terraform.io host terraform state, execute in the local
+[![asciicast](https://asciinema.org/a/rUEWrHHpsQdCNb1p1J4ZjC2VJ.svg)](https://asciinema.org/a/rUEWrHHpsQdCNb1p1J4ZjC2VJ)
+
+* <https://fly.io> host online test project
+* <https://neon.tech> host online test database
+* <https://app.terraform.io> host terraform state, execute in the local
 * [terraform-community-providers/neon](https://registry.terraform.io/providers/terraform-community-providers/neon/latest) terraform neon provider
 * [floydspace/fly]( https://registry.terraform.io/providers/floydspace/fly/latest) terraform fly provider[^not official]
+
+[^1]: https://github.com/direnv/direnv we should `direnv allow` in the single shell process
 
 [^not official]: https://github.com/fly-apps/terraform-provider-fly/pull/106#issuecomment-1501199345

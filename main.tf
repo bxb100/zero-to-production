@@ -33,7 +33,7 @@ provider "neon" {}
 resource "neon_project" "this" {
   name      = var.app_name
   region_id = "aws-us-west-2"
-  branch    = {
+  branch = {
     name = "main"
   }
 }
@@ -43,7 +43,7 @@ resource "neon_role" "this" {
   branch_id  = neon_project.this.branch.id
   name       = "tf_role"
   lifecycle {
-    ignore_changes  = all
+    ignore_changes = all
   }
 }
 
@@ -62,8 +62,8 @@ provider "fly" {
 }
 
 resource "fly_app" "this" {
-  name    = var.app_name
-  org     = "personal"
+  name = var.app_name
+  org  = "personal"
   secrets = {
     APP_DATABASE__HOST = {
       value = neon_project.this.branch.endpoint.host
@@ -77,9 +77,20 @@ resource "fly_app" "this" {
     APP_DATABASE__DATABASE_NAME = {
       value = neon_database.this.name
     }
+    DATABASE_URL = {
+      value = "postgres://${neon_role.this.name}:${neon_role.this.password}@${neon_project.this.branch.endpoint.host}/${neon_database.this.name}"
+    }
   }
   lifecycle {
-    ignore_changes  = [secrets["APP_DATABASE__PASSWORD"]]
+    ignore_changes = [secrets["APP_DATABASE__PASSWORD"], secrets["DATABASE_URL"]]
+  }
+
+  provisioner "local-exec" {
+    command = "echo 'export DATABASE_URL=${self.secrets["DATABASE_URL"].value}' >> .envrc"
+  }
+  provisioner "local-exec" {
+    when    = destroy
+    command = "sed -i '' '/DATABASE_URL/d' .envrc"
   }
 }
 
