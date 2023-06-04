@@ -9,6 +9,7 @@ on:
       - 'scripts/**'
       - 'README.md'
       - 'main.tf'
+      - 'makefile'
       - '.terraform.lock.hcl'
       - 'fly.toml'
 

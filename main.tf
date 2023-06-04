@@ -86,11 +86,11 @@ resource "fly_app" "this" {
   }
 
   provisioner "local-exec" {
-    command = "echo 'export DATABASE_URL=${self.secrets["DATABASE_URL"].value}' >> .envrc"
+    command = "echo 'DATABASE_URL=${self.secrets["DATABASE_URL"].value}' >> .prod.env"
   }
   provisioner "local-exec" {
     when    = destroy
-    command = "sed -i '' '/DATABASE_URL/d' .envrc"
+    command = "sed -i '' '/DATABASE_URL/d' .prod.env"
   }
 }
 

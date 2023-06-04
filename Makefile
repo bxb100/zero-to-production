@@ -38,14 +38,17 @@ prepare: ## prepare sqlx offline metadata
     # all our SQL queries.
 	cargo sqlx prepare -- --lib
 
-.PHONY: infra-plan infra infra-destroy fly-prep fly-deploy fly-run
+config_file := .prod.env
+export DATABASE_URL=$(shell cat $(config_file) | grep "DATABASE_URL" | awk -F '=' '{print $$NF}')
+
+.PHONY: infra-plan infra infra-down fly-prep fly-deploy fly-run
 infra-plan: ## terraform init and plan
 ifeq ($(strip $(FLY_API_TOKEN)),)
-	@echo "FLY_API_TOKEN is empty, add it to .envrc and using direnv allow"
+	@echo "FLY_API_TOKEN is empty, make sure the environment exist this variable"
 	@false
 endif
 ifeq ($(strip $(NEON_TOKEN)),)
-	@echo "NEON_TOKEN is empty, add it to .envrc and using direnv allow"
+	@echo "NEON_TOKEN is empty, make sure the environment exist this variable"
 	@false
 endif
 	@terraform init
@@ -55,12 +58,12 @@ infra: infra-plan ## terraform apply
 	@terraform apply --auto-approve
 	@echo "RUN direnv allow to effect the chanages"
 
-infra-destroy: ## terraform destroy
+infra-down: ## terraform destroy
 	@terraform destroy --auto-approve
 
 fly-prep: ## prepare postgres database for fly
 ifeq ($(strip $(DATABASE_URL)),)
-	@echo "DATABASE_URL is empty, madd it to .envrc and using direnv allow"
+	@echo "'$(config_file)' is exist and contains DATABASE_URL or not"
 	@false
 endif
 	@echo DATABASE_URL is $(DATABASE_URL)
@@ -70,3 +73,7 @@ endif
 fly-deploy: fly-prep ## deploy to fly
 	@#fly secrets import < .secrets.env
 	@fly deploy
+
+fly-run: ## build infra and deploy fly
+	@$(MAKE) infra
+	@$(MAKE) fly-deploy

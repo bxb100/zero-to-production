@@ -45,7 +45,7 @@ stateDiagram-v2
     Terraform --> flyCLI
 ```
 
-[![asciicast](https://asciinema.org/a/rUEWrHHpsQdCNb1p1J4ZjC2VJ.svg)](https://asciinema.org/a/rUEWrHHpsQdCNb1p1J4ZjC2VJ)
+[![asciicast](https://asciinema.org/a/FMI20lgLy7XagAkpGdz6u6TIl.svg)](https://asciinema.org/a/FMI20lgLy7XagAkpGdz6u6TIl)
 
 * <https://fly.io> host online test project
 * <https://neon.tech> host online test database
@@ -53,6 +53,10 @@ stateDiagram-v2
 * [terraform-community-providers/neon](https://registry.terraform.io/providers/terraform-community-providers/neon/latest) terraform neon provider
 * [floydspace/fly]( https://registry.terraform.io/providers/floydspace/fly/latest) terraform fly provider[^not official]
 
-[^1]: https://github.com/direnv/direnv we should `direnv allow` in the single shell process
+## Problems
 
-[^not official]: https://github.com/fly-apps/terraform-provider-fly/pull/106#issuecomment-1501199345
+* [ ] `terraform apply` create a fly app with a machine, but `fly deploy` will be using a new machine to deploy, so there are will have one duplicate machine
+
+[^1]: <https://github.com/direnv/direnv> we should `direnv allow` in the single shell process
+
+[^not official]: <https://github.com/fly-apps/terraform-provider-fly/pull/106#issuecomment-1501199345>
