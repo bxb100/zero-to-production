@@ -39,7 +39,6 @@ prepare: ## prepare sqlx offline metadata
 	cargo sqlx prepare -- --lib
 
 config_file := .prod.env
-export DATABASE_URL=$(shell cat $(config_file) | grep "DATABASE_URL" | awk -F '=' '{print $$NF}')
 
 .PHONY: infra-plan infra infra-down fly-prep fly-deploy fly-run
 infra-plan: ## terraform init and plan
@@ -61,14 +60,15 @@ infra: infra-plan ## terraform apply
 infra-down: ## terraform destroy
 	@terraform destroy --auto-approve
 
+DATABASE_URL := $(shell cat $(config_file) | grep "DATABASE_URL" | awk -F '=' '{print $$NF}')
 fly-prep: ## prepare postgres database for fly
 ifeq ($(strip $(DATABASE_URL)),)
-	@echo "'$(config_file)' is exist and contains DATABASE_URL or not"
+	@echo "check if '$(config_file)' exist or contains DATABASE_URL"
 	@false
 endif
 	@echo DATABASE_URL is $(DATABASE_URL)
 	@# notice we need to export the DATABASE_URL variable for sqlx to run
-	@sqlx migrate info && sqlx migrate run
+	@DATABASE_URL=${DATABASE_URL} sqlx migrate info && sqlx migrate run
 
 fly-deploy: fly-prep ## deploy to fly
 	@#fly secrets import < .secrets.env
