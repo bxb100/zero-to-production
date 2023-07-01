@@ -55,7 +55,7 @@ endif
 
 infra: infra-plan ## terraform apply
 	@terraform apply --auto-approve
-	@echo "RUN direnv allow to effect the chanages"
+	@echo "RUN 'direnv allow' to effect the environment variables"
 
 infra-down: ## terraform destroy
 	@terraform destroy --auto-approve

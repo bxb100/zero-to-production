@@ -6,3 +6,9 @@ database:
   username: "postgres"
   password: "password"
   database_name: "newsletter"
+email_client:
+  base_url: "localhost"
+  sender_email: "test@gmail.com"
+  #  we should deal this properties outside of version control
+  authorization_token: "secret_token"
+  timeout_milliseconds: 10000

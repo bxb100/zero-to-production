@@ -27,6 +27,12 @@ variable "app_name" {
   type        = string
 }
 
+variable "resend_api_key" {
+  default     = ""
+  description = "The resend email API Key"
+  type        = string
+}
+
 # NEON_API_KEY
 provider "neon" {}
 
@@ -76,6 +82,9 @@ resource "fly_app" "this" {
     }
     APP_DATABASE__DATABASE_NAME = {
       value = neon_database.this.name
+    }
+    RESEND_API_KEY = {
+      value = var.resend_api_key
     }
     DATABASE_URL = {
       value = "postgres://${neon_role.this.name}:${neon_role.this.password}@${neon_project.this.branch.endpoint.host}/${neon_database.this.name}"

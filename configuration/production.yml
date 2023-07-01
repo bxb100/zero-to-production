@@ -2,3 +2,7 @@ application:
   host: 0.0.0.0
 database:
   require_ssl: true
+email_client:
+#  https://resend.com/docs/api-reference/emails/send-email
+  base_url: "https://api.resend.com/emails"
+  sender_email: "hello@email.tomcat.run"
